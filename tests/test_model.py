@@ -106,12 +106,16 @@ def test_compute_ods():
     
     # Create simple ground truth and prediction
     # Image 1: Perfect match at threshold 0.5
-    gt1 = np.zeros((10,10), dtype=np.uint8); gt1[5,:] = 255
-    pred1 = np.zeros((10,10), dtype=np.uint8); pred1[5,:] = 200 # 200 > 0.5*255
-    
+    gt1 = np.zeros((10, 10), dtype=np.uint8)
+    gt1[5, :] = 255
+    pred1 = np.zeros((10, 10), dtype=np.uint8)
+    pred1[5, :] = 200  # 200 > 0.5*255
+
     # Image 2: No match
-    gt2 = np.zeros((10,10), dtype=np.uint8); gt2[0,:] = 255
-    pred2 = np.zeros((10,10), dtype=np.uint8); pred2[9,:] = 200
+    gt2 = np.zeros((10, 10), dtype=np.uint8)
+    gt2[0, :] = 255
+    pred2 = np.zeros((10, 10), dtype=np.uint8)
+    pred2[9, :] = 200
     
     # Test ODS
     res = compute_ods([pred1, pred2], [gt1, gt2], thresholds=[0.1, 0.5, 0.9])

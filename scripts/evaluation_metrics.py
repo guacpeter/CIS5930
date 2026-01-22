@@ -140,7 +140,6 @@ def main():
         # Per-method summary
         print("-" * 80)
         agg = aggregate_stats[method]
-        agg_metrics = compute_derived_metrics(agg)
         print(f"{'TOTAL':<12} {agg['TP']:>10,} {agg['FP']:>10,} {agg['TN']:>12,} {agg['FN']:>10,}")
 
     # =========================================================================
@@ -152,7 +151,6 @@ def main():
 
     for method in methods:
         stats_list = per_image_stats[method]
-        n = len(stats_list)
 
         avg_precision = np.mean([s['precision'] for s in stats_list])
         avg_recall = np.mean([s['recall'] for s in stats_list])

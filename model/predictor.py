@@ -111,25 +111,27 @@ class EdgePredictor:
             if label == -1 or len(cluster_pts) < 3:
                 # Noise -> Proximity
                 edges = self._proximity_edges(cluster_pts, indices)
-                for p1, p2 in edges: proposals.append((p1, p2, 'proximity'))
+                for p1, p2 in edges:
+                    proposals.append((p1, p2, 'proximity'))
                 continue
-                
-            dims = self._get_pca_dims(cluster_pts)
-            n_pts = len(cluster_pts)
-            
-            # STRATEGY SELECTION
-            
-            if dims['ratio'] > 0.85: # Linear (Roads, Poles)
-                edges = self._mst_edges(cluster_pts, indices)
-                for p1, p2 in edges: proposals.append((p1, p2, 'mst'))
 
-            elif dims['ratio'] < 0.3 and dims['density'] > 0.5: # Small/Dense Circular (Wheels)
+            dims = self._get_pca_dims(cluster_pts)
+
+            # STRATEGY SELECTION
+            if dims['ratio'] > 0.85:  # Linear (Roads, Poles)
+                edges = self._mst_edges(cluster_pts, indices)
+                for p1, p2 in edges:
+                    proposals.append((p1, p2, 'mst'))
+
+            elif dims['ratio'] < 0.3 and dims['density'] > 0.5:  # Small/Dense Circular (Wheels)
                 edges = self._convex_hull_edges(cluster_pts, indices)
-                for p1, p2 in edges: proposals.append((p1, p2, 'hull'))
-                
-            else: # Generic Blob/Texture
+                for p1, p2 in edges:
+                    proposals.append((p1, p2, 'hull'))
+
+            else:  # Generic Blob/Texture
                 edges = self._proximity_edges(cluster_pts, indices)
-                for p1, p2 in edges: proposals.append((p1, p2, 'proximity'))
+                for p1, p2 in edges:
+                    proposals.append((p1, p2, 'proximity'))
 
         # 3. Gap Filling (Global)
         mst_only = [(p1, p2) for p1, p2, t in proposals if t == 'mst']
@@ -159,7 +161,8 @@ class EdgePredictor:
                 if np.linalg.norm(points[v1] - points[v2]) <= self.max_dist * 2.5:
                     edges.append((indices[v1], indices[v2]))
             return edges
-        except: return self._proximity_edges(points, indices)
+        except Exception:
+            return self._proximity_edges(points, indices)
 
     def _mst_edges(self, points, indices):
         dist_matrix = squareform(pdist(points))
@@ -184,19 +187,21 @@ class EdgePredictor:
         return list(edges)
         
     def _connect_gaps(self, edges, keypoints):
-        # Build adjacency
+        """Connect gap endpoints within alignment threshold."""
         adj = {i: [] for i in range(len(keypoints))}
         for p1, p2 in edges:
-            adj[p1].append(p2); adj[p2].append(p1)
+            adj[p1].append(p2)
+            adj[p2].append(p1)
         endpoints = [i for i, n in adj.items() if len(n) == 1]
-        
+
         gap_edges = []
         for i in range(len(endpoints)):
             u = endpoints[i]
             v = adj[u][0]
             dir_vec = (keypoints[u] - keypoints[v]).astype(float)
             norm = np.linalg.norm(dir_vec)
-            if norm == 0: continue
+            if norm == 0:
+                continue
             dir_vec /= norm
             
             for j in range(i + 1, len(endpoints)):
