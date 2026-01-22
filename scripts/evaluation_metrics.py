@@ -82,7 +82,7 @@ def main():
     data_dir = script_dir / 'data'
 
     paths = get_image_paths(data_dir)
-    methods = ['knn_alpha', 'gauging_beta', 'union', 'intersection']
+    methods = ['hybrid']  # DBSCAN + MST + Convex Hull hybrid approach
 
     print("=" * 100)
     print("EDGE DETECTION EVALUATION METRICS")
@@ -94,7 +94,7 @@ def main():
     per_image_stats = {m: [] for m in methods}
     aggregate_stats = {m: {'TP': 0, 'FP': 0, 'TN': 0, 'FN': 0} for m in methods}
 
-    predictor = EdgePredictor(k=2, beta=0.5, alpha=0.02)
+    predictor = EdgePredictor(eps=20, min_samples=3, max_dist=20, gap_dist=60)
 
     # =========================================================================
     # PER-IMAGE STATISTICS
@@ -117,10 +117,9 @@ def main():
 
             gt_edge = load_edge_gt(edge_path, target_size=(w, h))
 
-            keypoints, scores, _ = load_keypoints(kp_path)
+            keypoints, scores, descriptors = load_keypoints(kp_path)
             filtered_kp = filter_keypoints(keypoints, scores)
-
-            pred_edge = predictor.predict(filtered_kp, (h, w), method=method)
+            pred_edge = predictor.predict(filtered_kp, (h, w), scores=scores, descriptors=descriptors)
             stats = compute_pixel_stats(pred_edge, gt_edge)
             metrics = compute_derived_metrics(stats)
 
